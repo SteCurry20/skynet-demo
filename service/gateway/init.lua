@@ -42,7 +42,7 @@ local process_msg = function(fd, msgstr)
         local node = skynet.getenv("node")
         local nodecfg = runconfig[node]
         local loginid = math.random(1, #nodecfg.login)
-        skynet.send(login, "lua", "client", fd, cmd, msg)
+        skynet.send(loginid, "lua", "client", fd, cmd, msg)
         --完成登录流程
     else
         local gplayer = players[playerid]
