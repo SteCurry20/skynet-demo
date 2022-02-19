@@ -18,7 +18,7 @@ process_buff = function(fd, readbuff)
         local msgstr, rest = string.match(readbuff, "(.-)\r\n(.*)")
         if msgstr then
             readbuff = rest
-            process_buff(fd, msgstr)
+            process_msg(fd, msgstr)
         end
         return readbuff
     end
