@@ -12,6 +12,17 @@ local socket = require "skynet.socket"
 conns = {} --[fd]=conn
 players = {} -- [playerid] = gateplayer
 
+local process_buff = function(fd, readbuff)
+    while true do
+        local msgstr, rest = string.match(readbuff, "(.-)\r\n(.*)")
+        if msgstr then
+            readbuff = rest
+            process_buff(fd, msgstr)
+        end
+        return readbuff
+    end
+end
+
 -- 每一条连接接收数据处理
 -- 协议格式 cmd,arg1,arg2,...#
 local recv_loop = function(fd)
@@ -47,17 +58,6 @@ function s.init()
     local listenfd = socket.listen("0.0.0.0", port)
     skynet.error("listen socket:", "0.0.0.0", port)
     socket.start(listenfd, connect)
-end
-
-local process_buff = function(fd, readbuff)
-    while true do
-        local msgstr, rest = string.match(readbuff, "(.-)\r\n(.*)")
-        if msgstr then
-            readbuff = rest
-            process_buff(fd, msgstr)
-        end
-        return readbuff
-    end
 end
 
 -- 连接类
