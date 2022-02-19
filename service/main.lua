@@ -1,5 +1,4 @@
 local skynet = require "skynet"
-local s = require "service"
 
 skynet.error(function()
     skynet.error("[start main]")
