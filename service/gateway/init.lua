@@ -12,7 +12,8 @@ local socket = require "skynet.socket"
 conns = {} --[fd]=conn
 players = {} -- [playerid] = gateplayer
 
-local process_buff = function(fd, readbuff)
+local process_buff
+process_buff = function(fd, readbuff)
     while true do
         local msgstr, rest = string.match(readbuff, "(.-)\r\n(.*)")
         if msgstr then
