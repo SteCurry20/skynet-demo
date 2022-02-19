@@ -5,6 +5,7 @@
 ---
 
 local skynet = require "skynet"
+skynet.error("end")
 local s = require "service"
 
 function s.init()
