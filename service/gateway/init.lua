@@ -11,4 +11,5 @@ function s.init()
     skynet.error("[start]" .. s.name .. "" .. s.id)
 end
 
+skynet.error("end")
 s.start(...)
