@@ -18,13 +18,15 @@ function s.init()
     local port = nodecfg.gateway[s.id].port
     local listenfd = socket.listen("0.0.0.0", port)
     skynet.error("listen socket:", "0.0.0.0", port)
-    socket.start(listenfd, function(fd, addr)
-        print("connect from " .. addr .. " " .. fd)
-        local c = conn()
-        conns[fd] = c
-        skynet.fork(recv_loop, fd)
-    end
-    )
+    socket.start(listenfd, connect)
+end
+
+-- 有新连接时
+local connect = function(fd, addr)
+    print("connect from " .. addr .. " " .. fd)
+    local c = conn()
+    conns[fd] = c
+    skynet.fork(recv_loop, fd)
 end
 
 -- 每一条连接接收数据处理
