@@ -12,8 +12,46 @@ local socket = require "skynet.socket"
 conns = {} --[fd]=conn
 players = {} -- [playerid] = gateplayer
 
-local process_buff
-process_buff = function(fd, readbuff)
+local str_unpack = function(msgstr)
+    local msg = {}
+    while true do
+        local arg, rest = string.match(msgstr, "(.-),(.*)")
+        if arg then
+            msgstr = rest
+            table.insert(msg, msgstr)
+        else
+            table.insert(msg, msgstr)
+            break
+        end
+    end
+    return msg[1], msg
+end
+
+local str_pack = function(cmd, msg)
+    return table.concat(msg, ",") .. "\r\n"
+
+end
+
+local process_msg = function(fd, msgstr)
+    local cmd, msg = str_unpack(msgstr)
+    skynet.error("recv " .. fd .. " [" .. cmd .. "[ }" .. table.concat(msg, ",") .. "}")
+    local conn = conns[fd]
+    local playerid = conn.playerid
+    --尚未完成登录流程
+    if not playerid then
+        local node = skynet.getenv("node")
+        local nodecfg = runconfig[node]
+        local loginid = math.random(1, #nodecfg.login)
+        skynet.send(login, "lua", "client", fd, cmd, msg)
+        --完成登录流程
+    else
+        local gplayer = players[playerid]
+        local agent = gplayer.agent
+        skynet.send(agent, "lua", "client", cmd, msg)
+    end
+end
+
+local process_buff = function(fd, readbuff)
     while true do
         local msgstr, rest = string.match(readbuff, "(.-)\r\n(.*)")
         if msgstr then
@@ -78,45 +116,6 @@ function gateplayer()
         conn = nil
     }
     return m
-end
-
-local str_unpack = function(msgstr)
-    local msg = {}
-    while true do
-        local arg, rest = string.match(msgstr, "(.-),(.*)")
-        if arg then
-            msgstr = rest
-            table.insert(msg, msgstr)
-        else
-            table.insert(msg, msgstr)
-            break
-        end
-    end
-    return msg[1], msg
-end
-
-local str_pack = function(cmd, msg)
-    return table.concat(msg, ",") .. "\r\n"
-
-end
-
-local process_msg = function(fd, msgstr)
-    local cmd, msg = str_unpack(msgstr)
-    skynet.error("recv " .. fd .. " [" .. cmd .. "[ }" .. table.concat(msg, ",") .. "}")
-    local conn = conns[fd]
-    local playerid = conn.playerid
-    --尚未完成登录流程
-    if not playerid then
-        local node = skynet.getenv("node")
-        local nodecfg = runconfig[node]
-        local loginid = math.random(1, #nodecfg.login)
-        skynet.send(login, "lua", "client", fd, cmd, msg)
-        --完成登录流程
-    else
-        local gplayer = players[playerid]
-        local agent = gplayer.agent
-        skynet.send(agent, "lua", "client", cmd, msg)
-    end
 end
 
 s.start(...)
